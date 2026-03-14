@@ -1,0 +1,517 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+/* BATMAN THEME (DEFAULT) */
+:root {
+  --background: oklch(0.05 0 0);
+  /* near black */
+  --foreground: oklch(0.8 0 0);
+
+  --card: oklch(0.1 0 0);
+  /* dark charcoal */
+  --card-foreground: oklch(0.8 0 0);
+
+  --popover: oklch(0.12 0 0);
+  --popover-foreground: oklch(0.8 0 0);
+
+  --primary: oklch(0.65 0.1 85);
+  /* muted gold accent */
+  --primary-foreground: oklch(0.05 0 0);
+
+  --secondary: oklch(0.12 0 0);
+  --secondary-foreground: oklch(0.8 0 0);
+
+  --muted: oklch(0.15 0 0);
+  /* deep slate grey */
+  --muted-foreground: oklch(0.5 0 0);
+
+  --accent: oklch(0.65 0.1 85);
+  /* muted gold highlight */
+  --accent-foreground: oklch(0.05 0 0);
+
+  --border: oklch(0.2 0 0);
+  /* graphite grey */
+  --input: oklch(0.15 0 0);
+  --ring: oklch(0.65 0.1 85);
+
+  --radius: 0rem;
+
+  --sidebar: oklch(0.08 0 0);
+  --sidebar-foreground: oklch(0.8 0 0);
+  --sidebar-primary: oklch(0.65 0.1 85);
+  --sidebar-primary-foreground: oklch(0.05 0 0);
+  --sidebar-accent: oklch(0.65 0.1 85);
+  --sidebar-accent-foreground: oklch(0.05 0 0);
+  --sidebar-border: oklch(0.2 0 0);
+  --sidebar-ring: oklch(0.65 0.1 85);
+
+  /* Helper colors */
+  --gotham-black: oklch(0.05 0 0);
+  --gotham-charcoal: oklch(0.1 0 0);
+  --gotham-grey: oklch(0.15 0 0);
+
+  /* Atmosphere Tokens - Batman */
+  --halftone-dot: oklch(0.25 0 0 / 0.15);
+  --fog-color-1: oklch(0.2 0 0 / 0.04);
+  --fog-color-2: oklch(0.15 0 0 / 0.02);
+  --spotlight-color: oklch(0.25 0 0 / 0.1);
+}
+
+/* JOKER THEME OVERRIDES (LIGHT MODE) */
+[data-theme="joker"] {
+  --background: oklch(0.98 0.01 120);
+  /* Light off-white */
+  --foreground: oklch(0.12 0.05 300);
+  /* Dark text */
+
+  --card: oklch(1 0 0);
+  /* Pure white */
+  --card-foreground: oklch(0.12 0.05 300);
+
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.12 0.05 300);
+
+  --primary: oklch(0.45 0.22 300);
+  /* Deep purple */
+  --primary-foreground: oklch(0.98 0.05 300);
+  /* Light purple text */
+
+  --secondary: oklch(0.94 0.04 140);
+  /* Light toxic green */
+  --secondary-foreground: oklch(0.12 0.05 300);
+
+  --muted: oklch(0.92 0.02 120);
+  /* Light grey */
+  --muted-foreground: oklch(0.45 0.05 300);
+  /* Muted purple/grey text */
+
+  --accent: oklch(0.75 0.25 140);
+  /* Toxic green */
+  --accent-foreground: oklch(0.05 0.1 140);
+  /* Dark green text */
+
+  --border: oklch(0.85 0.05 300);
+  /* Light purple border */
+  --input: oklch(0.9 0.05 300);
+  --ring: oklch(0.45 0.22 300);
+
+  --radius: 0rem;
+
+  --sidebar: oklch(0.96 0.02 120);
+  --sidebar-foreground: oklch(0.12 0.05 300);
+  --sidebar-primary: oklch(0.45 0.22 300);
+  --sidebar-primary-foreground: oklch(0.98 0.05 300);
+  --sidebar-accent: oklch(0.75 0.25 140);
+  --sidebar-accent-foreground: oklch(0.05 0.1 140);
+  --sidebar-border: oklch(0.85 0.05 300);
+  --sidebar-ring: oklch(0.45 0.22 300);
+
+  /* Helper colors for light mode */
+  --gotham-black: oklch(0.96 0.02 120);
+  /* Near white */
+  --gotham-charcoal: oklch(0.9 0.03 120);
+  /* Light grey */
+  --gotham-grey: oklch(0.85 0.04 120);
+  /* Muted grey */
+
+  /* Atmosphere Tokens - Joker (Lightened) */
+  --halftone-dot: oklch(0.45 0.22 300 / 0.1);
+  /* Faint purple dots */
+  --fog-color-1: oklch(0.75 0.25 140 / 0.05);
+  /* Faint toxic green fog */
+  --fog-color-2: oklch(0.45 0.22 300 / 0.03);
+  /* Faint purple fog */
+  --spotlight-color: transparent;
+}
+
+@theme inline {
+  --font-sans: 'Bangers', 'Impact', sans-serif;
+  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  --font-body: 'Geist', 'Geist Fallback';
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Base semantic colors used in components */
+  --color-gotham-black: var(--gotham-black);
+  --color-gotham-charcoal: var(--gotham-charcoal);
+  --color-gotham-grey: var(--gotham-grey);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  /* Scoped theme-switch transitions — only on elements that actually change colour.
+     150ms is snappy; 500ms on * was firing on every node on every interaction. */
+  a,
+  button,
+  input,
+  textarea,
+  .comic-panel,
+  .caption-box,
+  .speech-bubble,
+  [class*="bg-"],
+  [class*="text-"],
+  [class*="border-"] {
+    transition-property: color, background-color, border-color, opacity;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+  }
+
+  body {
+    @apply bg-background text-foreground min-h-screen relative overflow-x-hidden;
+  }
+
+  /* Gotham Atmosphere - Global Fixed Layers */
+  body::before,
+  body::after {
+    content: "";
+    position: fixed;
+    z-index: 10;
+    /* Put it above the background but let components stay interactive */
+    pointer-events: none;
+    inset: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  /* Fog & Spotlight Layer */
+  body::before {
+    background:
+      radial-gradient(circle at 50% -10%, var(--spotlight-color), transparent 60%),
+      radial-gradient(circle at 20% 30%, var(--fog-color-1), transparent 50%),
+      radial-gradient(circle at 80% 70%, var(--fog-color-2), transparent 60%);
+    z-index: 5;
+  }
+
+  /* Drifting Mist — no blur filter (too expensive). Soft gradient only. */
+  body::after {
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 30%, var(--fog-color-1), transparent),
+      radial-gradient(ellipse 60% 80% at 80% 70%, var(--fog-color-2), transparent);
+    animation: gotham-fog 120s linear infinite;
+    z-index: 4;
+    will-change: transform;
+  }
+
+  /* Ensure main content is above atmospheric layers or correctly blended */
+  /* This transparency only applies to the Batman theme to show the ambient background */
+  :root:not([data-theme="joker"]) main,
+  :root:not([data-theme="joker"]) section {
+    position: relative;
+    z-index: 20;
+    background-color: transparent !important;
+  }
+}
+
+@keyframes gotham-fog {
+  0% {
+    transform: translate(-5%, -5%) rotate(0deg);
+  }
+
+  50% {
+    transform: translate(5%, 10%) rotate(2deg);
+  }
+
+  100% {
+    transform: translate(-5%, -5%) rotate(0deg);
+  }
+}
+
+/* Comic Panel Styles */
+.comic-panel {
+  position: relative;
+  border: 4px solid #1a1a1a;
+  box-shadow:
+    inset 0 0 0 2px #2a2a2a,
+    8px 8px 0 0 rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  transform: translateZ(0);
+  /* promote to GPU layer */
+}
+
+.comic-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(135deg, transparent 40%, rgba(255, 255, 255, 0.03) 50%, transparent 60%);
+  pointer-events: none;
+}
+
+/* Diagonal clip paths for comic panels */
+.clip-diagonal-tl {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 15% 100%);
+}
+
+.clip-diagonal-tr {
+  clip-path: polygon(0 0, 100% 0, 85% 100%, 0 100%);
+}
+
+.clip-diagonal-bl {
+  clip-path: polygon(15% 0, 100% 0, 100% 100%, 0 100%);
+}
+
+.clip-diagonal-br {
+  clip-path: polygon(0 0, 85% 0, 100% 100%, 0 100%);
+}
+
+.clip-slant-left {
+  clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
+}
+
+.clip-slant-right {
+  clip-path: polygon(0 0, 90% 0, 100% 100%, 10% 100%);
+}
+
+/* Comic caption box */
+.caption-box {
+  background: linear-gradient(135deg, var(--gotham-grey) 0%, var(--gotham-black) 100%);
+  border: 3px solid var(--border);
+  padding: 1rem 1.5rem;
+  font-style: italic;
+  position: relative;
+}
+
+.caption-box::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: 20px;
+  width: 60%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+}
+
+/* Speech bubble */
+.speech-bubble {
+  position: relative;
+  background: var(--foreground);
+  color: var(--background);
+  border-radius: 20px;
+  padding: 1rem 1.5rem;
+  border: 3px solid var(--background);
+}
+
+.speech-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -20px;
+  left: 30px;
+  border-width: 20px 15px 0;
+  border-style: solid;
+  border-color: var(--background) transparent transparent transparent;
+}
+
+.speech-bubble::before {
+  content: '';
+  position: absolute;
+  bottom: -14px;
+  left: 33px;
+  border-width: 16px 12px 0;
+  border-style: solid;
+  border-color: var(--foreground) transparent transparent transparent;
+  z-index: 1;
+}
+
+/* Halftone effect */
+.halftone {
+  background-image: radial-gradient(circle, var(--halftone-dot) 1px, transparent 1px);
+  background-size: 4px 4px;
+}
+
+/* Comic text effects */
+.comic-title {
+  text-shadow:
+    3px 3px 0 var(--primary),
+    6px 6px 0 rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.05em;
+}
+
+/* Glowing accent */
+.glow-primary {
+  box-shadow: 0 0 16px var(--primary),
+    0 0 32px color-mix(in srgb, var(--primary), transparent 75%);
+  will-change: box-shadow;
+}
+
+.glow-accent {
+  box-shadow: 0 0 16px var(--accent),
+    0 0 32px color-mix(in srgb, var(--accent), transparent 75%);
+  will-change: box-shadow;
+}
+
+/* Skewed panel transforms */
+.skew-panel {
+  transform: skewY(-3deg);
+}
+
+.skew-panel>* {
+  transform: skewY(3deg);
+}
+
+/* Animation Utilities */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+/* ── HALFTONE GRAIN OVERLAY ─────────────────────────────────────────────────
+   Screen-printed texture across the entire site. Sits above everything at
+   low opacity so it feels physically printed rather than digital.          */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle, var(--halftone-dot) 0.8px, transparent 0.8px);
+  background-size: 3px 3px;
+  opacity: 0.45;
+  mix-blend-mode: overlay;
+}
+
+/* ── MOBILE POLISH ──────────────────────────────────────────────────────────*/
+
+/* Force cursor:none on desktop so the custom stylus always shows —
+   overrides browser defaults and Tailwind cursor-pointer on interactive elements */
+@media (pointer: fine) {
+
+  *,
+  *::before,
+  *::after,
+  a,
+  button,
+  input,
+  textarea,
+  select,
+  label,
+  [role="button"],
+  [tabindex],
+  [class*="cursor-"] {
+    cursor: none !important;
+  }
+}
+
+/* Restore default cursor on touch devices */
+@media (pointer: coarse) {
+  * {
+    cursor: auto !important;
+  }
+}
+
+/* Scrollbar hidden for timeline horizontal scroll */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Stack contact grid on mobile */
+@media (max-width: 768px) {
+
+  /* Panels: disable rotation on mobile — too jarring on small screens */
+  .comic-panel {
+    transform: none !important;
+  }
+
+  /* Portfolio grid: full-width panels on mobile */
+  .auto-rows-\[200px\] {
+    grid-auto-rows: 180px;
+  }
+
+  /* Portfolio modal: full screen on mobile */
+  [data-modal] {
+    padding: 0 !important;
+    align-items: flex-end !important;
+  }
+
+  /* Contact grid single column */
+  .col-span-12.lg\:col-span-5,
+  .col-span-12.lg\:col-span-7 {
+    grid-column: span 12;
+  }
+
+  /* Contact form inputs: single col on mobile */
+  form>div[style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Timeline panels: slightly smaller on mobile */
+  .hide-scrollbar>div>div {
+    width: 200px !important;
+  }
+
+  /* Hero text size */
+  .font-\[var\(--font-bangers\)\].text-8xl {
+    font-size: 3.5rem !important;
+  }
+}
+
+/* Tap highlight removal for mobile */
+@media (pointer: coarse) {
+
+  a,
+  button {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Comic panel shadow lighter on mobile (performance) */
+@media (max-width: 640px) {
+  .comic-panel {
+    box-shadow: 4px 4px 0 0 rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* Smooth momentum scrolling for timeline */
+.hide-scrollbar {
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+}
+
+.hide-scrollbar>div>div>* {
+  scroll-snap-align: start;
+}
