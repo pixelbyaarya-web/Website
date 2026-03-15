@@ -59,7 +59,7 @@ const BATMAN_PANELS = [
     },
     {
         id: 4,
-        caption: "Dark Knight Studios.",
+        caption: "Pixel by Aarya.",
         sub: "Enter.",
         icon: (
             <svg viewBox="0 0 80 80" style={{ width: 64, height: 64 }}>
@@ -190,7 +190,7 @@ export function LoadingScreen() {
                             textTransform: "uppercase",
                         }}
                     >
-                        {isJoker ? "ISSUE #001 — THE JESTER EDITION" : "ISSUE #001 — DARK KNIGHT STUDIOS"}
+                        {isJoker ? "ISSUE #001 — THE JESTER EDITION" : "ISSUE #001 — THE ANTI-HERO EDITION"}
                     </motion.div>
 
                     {/* Comic strip — 4 panels in a row */}

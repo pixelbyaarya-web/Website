@@ -26,10 +26,10 @@ export function Navbar() {
           className="group flex items-center gap-3 shrink-0 cursor-pointer"
         >
           <div className="w-10 h-10 bg-card border-2 border-border flex items-center justify-center transform -skew-x-6 group-hover:border-primary transition-colors">
-            <span className="font-[var(--font-bangers)] text-xl text-primary transform skew-x-6">DK</span>
+            <span className="font-[var(--font-bangers)] text-xl text-primary transform skew-x-6">A.N</span>
           </div>
           <span className="hidden sm:inline-block font-[var(--font-bangers)] text-xl tracking-wider text-foreground group-hover:text-primary transition-colors">
-            DARK KNIGHT STUDIOS
+            PIXEL BY AARYA
           </span>
         </a>
 

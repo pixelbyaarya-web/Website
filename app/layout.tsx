@@ -20,7 +20,7 @@ const bangers = Bangers({
 });
 
 export const metadata: Metadata = {
-  title: 'Dark Knight Studios | Graphic Design Portfolio',
+  title: 'Aarya Nanellu | Graphic Design Portfolio',
   description: 'A comic book inspired portfolio showcasing graphic design work with a dark Gotham aesthetic',
   generator: 'v0.app',
   icons: {
