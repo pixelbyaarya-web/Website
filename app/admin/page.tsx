@@ -1,205 +1,291 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
-import { Eye, EyeOff, Lock, User } from "lucide-react"
-import Link from "next/link"
+import { Eye, EyeOff, Lock, Mail, AlertCircle } from "lucide-react"
 
 export default function AdminLoginPage() {
-  const [showPassword, setShowPassword] = useState(false)
-  const [isHovered, setIsHovered] = useState(false)
+  const router = useRouter()
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [showPw, setShowPw] = useState(false)
+  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError("")
+    setLoading(true)
+
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    })
+
+    if (res.ok) {
+      router.push("/admin/dashboard")
+    } else {
+      const data = await res.json()
+      setError(data.error || "Login failed")
+    }
+    setLoading(false)
+  }
 
   return (
-    <main className="min-h-screen bg-background flex items-center justify-center p-6 relative overflow-hidden">
-      {/* Halftone background */}
-      <div className="absolute inset-0 halftone opacity-30" />
-      
-      {/* Animated background accents */}
-      <motion.div
-        animate={{
-          rotate: [0, 360],
-          scale: [1, 1.1, 1],
-        }}
-        transition={{
-          duration: 20,
-          repeat: Infinity,
-          ease: "linear",
-        }}
-        className="absolute top-1/4 -left-32 w-64 h-64 bg-primary/10 blur-3xl"
-      />
-      <motion.div
-        animate={{
-          rotate: [360, 0],
-          scale: [1, 1.2, 1],
-        }}
-        transition={{
-          duration: 25,
-          repeat: Infinity,
-          ease: "linear",
-        }}
-        className="absolute bottom-1/4 -right-32 w-64 h-64 bg-accent/10 blur-3xl"
-      />
+    <main style={{
+      minHeight: "100vh",
+      background: "var(--background)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "1.5rem",
+      position: "relative",
+      overflow: "hidden",
+    }}>
+      <div className="absolute inset-0 halftone opacity-20" />
 
-      {/* Back to home link */}
-      <Link
-        href="/"
-        className="absolute top-6 left-6 font-[var(--font-bangers)] text-muted-foreground hover:text-primary transition-colors flex items-center gap-2"
+      {/* Rotating starburst */}
+      <motion.div
+        animate={{ rotate: 360 }}
+        transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
+        style={{
+          position: "absolute", width: 600, height: 600,
+          opacity: 0.04, pointerEvents: "none",
+        }}
       >
-        <span className="transform -skew-x-6 inline-block">{"<"}</span>
-        BACK TO SITE
-      </Link>
-
-      {/* Login container */}
-      <motion.div
-        initial={{ opacity: 0, y: 50, rotate: -3 }}
-        animate={{ opacity: 1, y: 0, rotate: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className="relative w-full max-w-md"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-        {/* Outer comic panel frame */}
-        <div className={`comic-panel bg-card p-1 transform transition-all duration-500 ${isHovered ? 'rotate-0 glow-purple' : '-rotate-1'}`}>
-          {/* Inner content */}
-          <div className="bg-gotham-charcoal p-8 relative">
-            {/* Caption box header */}
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3, duration: 0.5 }}
-              className="caption-box mb-8 transform -rotate-1"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-primary/30 border border-primary flex items-center justify-center transform -skew-x-6">
-                  <Lock className="w-5 h-5 text-primary transform skew-x-6" />
-                </div>
-                <div>
-                  <span className="font-[var(--font-geist)] text-xs text-muted-foreground tracking-widest block">
-                    RESTRICTED ACCESS
-                  </span>
-                  <h1 className="font-[var(--font-bangers)] text-2xl text-foreground">
-                    ADMIN <span className="text-primary">PORTAL</span>
-                  </h1>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Login form */}
-            <form className="space-y-6">
-              {/* Username field */}
-              <motion.div
-                initial={{ opacity: 0, x: -30 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.4, duration: 0.5 }}
-                className="space-y-2"
-              >
-                <label className="font-[var(--font-geist)] text-sm text-muted-foreground tracking-wider flex items-center gap-2">
-                  <User className="w-4 h-4" />
-                  IDENTITY
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    className="w-full px-4 py-3 bg-gotham-grey border-2 border-border text-foreground font-[var(--font-geist)] focus:border-primary focus:outline-none transition-all transform -skew-x-3 focus:skew-x-0"
-                    placeholder="Enter username..."
-                  />
-                  <div className="absolute right-0 top-0 h-full w-1 bg-primary/50 transform skew-x-6" />
-                </div>
-              </motion.div>
-
-              {/* Password field */}
-              <motion.div
-                initial={{ opacity: 0, x: -30 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.5, duration: 0.5 }}
-                className="space-y-2"
-              >
-                <label className="font-[var(--font-geist)] text-sm text-muted-foreground tracking-wider flex items-center gap-2">
-                  <Lock className="w-4 h-4" />
-                  PASSPHRASE
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    className="w-full px-4 py-3 pr-12 bg-gotham-grey border-2 border-border text-foreground font-[var(--font-geist)] focus:border-primary focus:outline-none transition-all transform skew-x-3 focus:skew-x-0"
-                    placeholder="Enter password..."
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
-                  >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                  </button>
-                  <div className="absolute left-0 top-0 h-full w-1 bg-accent/50 transform -skew-x-6" />
-                </div>
-              </motion.div>
-
-              {/* Remember me & Forgot password */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.6, duration: 0.5 }}
-                className="flex items-center justify-between"
-              >
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <div className="w-5 h-5 border-2 border-border bg-gotham-grey group-hover:border-primary transition-colors flex items-center justify-center">
-                    <input type="checkbox" className="sr-only peer" />
-                    <div className="w-3 h-3 bg-primary scale-0 peer-checked:scale-100 transition-transform" />
-                  </div>
-                  <span className="font-[var(--font-geist)] text-sm text-muted-foreground">Remember me</span>
-                </label>
-                <a href="#" className="font-[var(--font-geist)] text-sm text-primary hover:text-accent transition-colors">
-                  Forgot access?
-                </a>
-              </motion.div>
-
-              {/* Submit button */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.7, duration: 0.5 }}
-              >
-                <button
-                  type="submit"
-                  className="w-full py-4 bg-primary text-primary-foreground font-[var(--font-bangers)] text-xl tracking-wider transform -skew-x-6 hover:skew-x-0 transition-all glow-purple group"
-                >
-                  <span className="inline-block transform skew-x-6 group-hover:skew-x-0 transition-transform">
-                    AUTHENTICATE
-                  </span>
-                </button>
-              </motion.div>
-            </form>
-
-            {/* Security notice */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.8, duration: 0.5 }}
-              className="mt-8 pt-6 border-t border-border"
-            >
-              <p className="font-[var(--font-geist)] text-xs text-muted-foreground text-center italic">
-                {"This portal is monitored. Unauthorized access attempts will be logged."}
-              </p>
-            </motion.div>
-
-            {/* Decorative corner accents */}
-            <div className="absolute top-2 left-2 w-6 h-6 border-l-2 border-t-2 border-primary/50" />
-            <div className="absolute top-2 right-2 w-6 h-6 border-r-2 border-t-2 border-accent/50" />
-            <div className="absolute bottom-2 left-2 w-6 h-6 border-l-2 border-b-2 border-accent/50" />
-            <div className="absolute bottom-2 right-2 w-6 h-6 border-r-2 border-b-2 border-primary/50" />
-          </div>
-        </div>
-
-        {/* Panel number */}
-        <div className="absolute -bottom-4 -right-4 font-[var(--font-bangers)] text-6xl text-border/20">
-          X
-        </div>
+        <svg viewBox="0 0 100 100" style={{ width: "100%", height: "100%", fill: "var(--primary)" }}>
+          <path d="M50 0L55 35L90 20L65 45L100 50L65 55L90 80L55 65L50 100L45 65L10 80L35 55L0 50L35 45L10 20L45 35Z" />
+        </svg>
       </motion.div>
 
-      {/* Decorative elements */}
-      <div className="absolute bottom-8 left-8 w-16 h-16 border-l-4 border-b-4 border-primary/20" />
-      <div className="absolute top-8 right-8 w-16 h-16 border-r-4 border-t-4 border-accent/20" />
+      <motion.div
+        initial={{ opacity: 0, y: 30, rotate: -2 }}
+        animate={{ opacity: 1, y: 0, rotate: -1 }}
+        transition={{ type: "spring", damping: 20 }}
+        style={{ position: "relative", width: "100%", maxWidth: 420 }}
+      >
+        {/* Back button */}
+        <div style={{ textAlign: "center", marginBottom: "1rem" }}>
+          <a href="/" style={{
+            display: "inline-flex", alignItems: "center", gap: 6,
+            fontFamily: "var(--font-bangers)",
+            fontSize: "0.85rem",
+            letterSpacing: "0.1em",
+            color: "var(--muted-foreground)",
+            textDecoration: "none",
+            transition: "color 0.15s",
+          }}
+            onMouseEnter={e => (e.currentTarget.style.color = "var(--primary)")}
+            onMouseLeave={e => (e.currentTarget.style.color = "var(--muted-foreground)")}
+          >
+            ← BACK TO SITE
+          </a>
+        </div>
+
+        {/* Issue label */}
+        <p style={{
+          fontFamily: "var(--font-geist)",
+          fontSize: "0.65rem",
+          letterSpacing: "0.3em",
+          color: "var(--muted-foreground)",
+          textAlign: "center",
+          marginBottom: "1rem",
+          textTransform: "uppercase",
+        }}>
+          DARK KNIGHT STUDIOS — ADMIN ACCESS
+        </p>
+
+        <div style={{
+          border: "4px solid var(--foreground)",
+          boxShadow: "8px 8px 0 var(--foreground)",
+          background: "var(--card)",
+          padding: "2.5rem",
+          position: "relative",
+        }}>
+          {/* BAM badge */}
+          <motion.div
+            initial={{ scale: 0, rotate: 20 }}
+            animate={{ scale: 1, rotate: 15 }}
+            transition={{ delay: 0.3, type: "spring", bounce: 0.5 }}
+            style={{
+              position: "absolute", top: -16, right: -12,
+              background: "var(--primary)",
+              border: "3px solid var(--foreground)",
+              boxShadow: "3px 3px 0 var(--foreground)",
+              padding: "0.15rem 0.6rem",
+              fontFamily: "var(--font-bangers)",
+              fontSize: "1.1rem",
+              color: "var(--primary-foreground)",
+              letterSpacing: "0.05em",
+            }}
+          >
+            CLASSIFIED
+          </motion.div>
+
+          <h1 style={{
+            fontFamily: "var(--font-bangers)",
+            fontSize: "2.8rem",
+            color: "var(--foreground)",
+            letterSpacing: "0.04em",
+            textShadow: "3px 3px 0 var(--primary)",
+            marginBottom: "0.25rem",
+            lineHeight: 1,
+          }}>
+            ACCESS<br />
+            <span style={{ color: "var(--primary)" }}>GRANTED?</span>
+          </h1>
+          <p style={{
+            fontFamily: "var(--font-geist)",
+            fontSize: "0.8rem",
+            color: "var(--muted-foreground)",
+            marginBottom: "2rem",
+            fontStyle: "italic",
+          }}>
+            Identify yourself, vigilante.
+          </p>
+
+          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+            {/* Email */}
+            <div>
+              <label style={{
+                display: "block",
+                fontFamily: "var(--font-geist)",
+                fontSize: "0.7rem",
+                letterSpacing: "0.2em",
+                color: "var(--muted-foreground)",
+                marginBottom: "0.4rem",
+              }}>
+                EMAIL
+              </label>
+              <div style={{ position: "relative" }}>
+                <Mail size={14} style={{
+                  position: "absolute", left: 12, top: "50%",
+                  transform: "translateY(-50%)",
+                  color: "var(--muted-foreground)",
+                }} />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  required
+                  placeholder="your@email.com"
+                  style={{
+                    width: "100%",
+                    padding: "0.75rem 1rem 0.75rem 2.25rem",
+                    background: "var(--background)",
+                    border: "2px solid var(--border)",
+                    color: "var(--foreground)",
+                    fontFamily: "var(--font-geist)",
+                    fontSize: "0.9rem",
+                    outline: "none",
+                  }}
+                  onFocus={e => e.target.style.borderColor = "var(--primary)"}
+                  onBlur={e => e.target.style.borderColor = "var(--border)"}
+                />
+              </div>
+            </div>
+
+            {/* Password */}
+            <div>
+              <label style={{
+                display: "block",
+                fontFamily: "var(--font-geist)",
+                fontSize: "0.7rem",
+                letterSpacing: "0.2em",
+                color: "var(--muted-foreground)",
+                marginBottom: "0.4rem",
+              }}>
+                PASSWORD
+              </label>
+              <div style={{ position: "relative" }}>
+                <Lock size={14} style={{
+                  position: "absolute", left: 12, top: "50%",
+                  transform: "translateY(-50%)",
+                  color: "var(--muted-foreground)",
+                }} />
+                <input
+                  type={showPw ? "text" : "password"}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  required
+                  placeholder="••••••••"
+                  style={{
+                    width: "100%",
+                    padding: "0.75rem 2.5rem 0.75rem 2.25rem",
+                    background: "var(--background)",
+                    border: "2px solid var(--border)",
+                    color: "var(--foreground)",
+                    fontFamily: "var(--font-geist)",
+                    fontSize: "0.9rem",
+                    outline: "none",
+                  }}
+                  onFocus={e => e.target.style.borderColor = "var(--primary)"}
+                  onBlur={e => e.target.style.borderColor = "var(--border)"}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPw(v => !v)}
+                  style={{
+                    position: "absolute", right: 10, top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "none", border: "none",
+                    color: "var(--muted-foreground)",
+                    padding: 4,
+                  }}
+                >
+                  {showPw ? <EyeOff size={14} /> : <Eye size={14} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Error */}
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                style={{
+                  display: "flex", alignItems: "center", gap: "0.5rem",
+                  padding: "0.6rem 0.75rem",
+                  border: "2px solid var(--destructive, #ef4444)",
+                  background: "color-mix(in srgb, #ef4444 10%, transparent)",
+                  fontFamily: "var(--font-geist)",
+                  fontSize: "0.8rem",
+                  color: "#ef4444",
+                }}
+              >
+                <AlertCircle size={14} />
+                {error}
+              </motion.div>
+            )}
+
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                padding: "0.875rem",
+                background: loading ? "var(--muted)" : "var(--primary)",
+                color: "var(--primary-foreground)",
+                fontFamily: "var(--font-bangers)",
+                fontSize: "1.2rem",
+                letterSpacing: "0.1em",
+                border: "2px solid var(--foreground)",
+                boxShadow: loading ? "none" : "4px 4px 0 var(--foreground)",
+                transform: "skewX(-4deg)",
+                cursor: loading ? "wait" : "none",
+                transition: "all 0.15s",
+                marginTop: "0.5rem",
+              }}
+            >
+              <span style={{ display: "inline-block", transform: "skewX(4deg)" }}>
+                {loading ? "VERIFYING..." : "ENTER THE BAT-CAVE"}
+              </span>
+            </button>
+          </form>
+        </div>
+      </motion.div>
     </main>
   )
 }

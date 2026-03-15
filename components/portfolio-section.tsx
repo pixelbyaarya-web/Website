@@ -1,10 +1,41 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { X, ExternalLink, ChevronLeft, ChevronRight } from "lucide-react"
+import { X, ExternalLink, ChevronLeft, ChevronRight, Loader2 } from "lucide-react"
+import type { Artwork } from "@/lib/types"
 
-const portfolioItems = [
+// Explicit type used by the UI — shared between modal, card, and section
+export interface PortfolioItem {
+  id: string | number
+  title: string
+  category: string
+  description: string
+  process: string[]
+  tags: string[]
+  color: "primary" | "accent"
+  image_url: string | null
+  video_url: string | null
+  media_type: "image" | "video"
+}
+
+// Map Artwork from DB to PortfolioItem
+function mapArtwork(a: Artwork): PortfolioItem {
+  return {
+    id: a.id,
+    title: a.title || "UNTITLED",
+    category: a.category || "MISC",
+    description: a.description || "",
+    process: a.process_steps?.filter(Boolean) || [],
+    tags: a.tags || [],
+    color: (["BRAND IDENTITY", "BOOK DESIGN", "UI/UX DESIGN"].includes(a.category) ? "primary" : "accent") as "primary" | "accent",
+    image_url: a.image_url ?? null,
+    video_url: a.video_url ?? null,
+    media_type: a.media_type ?? "image",
+  }
+}
+
+const portfolioItems_PLACEHOLDER: PortfolioItem[] = [
   {
     id: 1,
     title: "SHADOW PROTOCOL",
@@ -13,7 +44,9 @@ const portfolioItems = [
     process: ["Initial sketches exploring the duality of protection and threat", "Typography exploration — 40+ typeface combinations tested", "Final system: modular logo, dark palette, tactile materials"],
     tags: ["Branding", "Typography", "Print"],
     color: "primary",
-    panels: 3,
+    image_url: null,
+    video_url: null,
+    media_type: "image" as const,
   },
   {
     id: 2,
@@ -23,7 +56,9 @@ const portfolioItems = [
     process: ["Mood boarding from film noir photography and neon signage", "Sketching the light/dark tension in rough thumbnail form", "Final renders with custom brush textures and halftone overlays"],
     tags: ["Illustration", "Digital", "Series"],
     color: "accent",
-    panels: 5,
+    image_url: null,
+    video_url: null,
+    media_type: "image" as const,
   },
   {
     id: 3,
@@ -33,7 +68,9 @@ const portfolioItems = [
     process: ["Research into classic EC Comics and 70s horror anthology aesthetics", "Grid system designed for maximum dramatic tension between panels", "Cover composition balancing dread and intrigue"],
     tags: ["Editorial", "Book Design", "Illustration"],
     color: "primary",
-    panels: 4,
+    image_url: null,
+    video_url: null,
+    media_type: "image" as const,
   },
   {
     id: 4,
@@ -43,7 +80,9 @@ const portfolioItems = [
     process: ["Studied Saul Bass and vintage film poster composition", "Screen-printing simulation with deliberate misregistration", "Edition of 50 — all sold out within 48 hours"],
     tags: ["Poster", "Print", "Series"],
     color: "accent",
-    panels: 3,
+    image_url: null,
+    video_url: null,
+    media_type: "image" as const,
   },
   {
     id: 5,
@@ -53,7 +92,9 @@ const portfolioItems = [
     process: ["User flows built around emotional state, not genre", "Component library of 80+ dark-mode optimised elements", "Prototype tested with 200+ musicians"],
     tags: ["UI/UX", "App Design", "Dark Mode"],
     color: "primary",
-    panels: 4,
+    image_url: null,
+    video_url: null,
+    media_type: "image" as const,
   },
   {
     id: 6,
@@ -63,7 +104,9 @@ const portfolioItems = [
     process: ["World-building document: 12,000 words of lore developed first", "30 environment thumbnails before committing to final 8", "Each piece hand-textured with ink washes scanned at 1200dpi"],
     tags: ["Concept Art", "Game", "Environment"],
     color: "accent",
-    panels: 6,
+    image_url: null,
+    video_url: null,
+    media_type: "image" as const,
   },
 ]
 
@@ -76,7 +119,7 @@ const panelConfigs = [
   "col-span-12 md:col-span-6 row-span-1 rotate-2",
 ]
 
-function PortfolioModal({ item, onClose }: { item: typeof portfolioItems[0]; onClose: () => void }) {
+function PortfolioModal({ item, onClose }: { item: PortfolioItem; onClose: () => void }) {
   const [processStep, setProcessStep] = useState(0)
 
   return (
@@ -86,7 +129,7 @@ function PortfolioModal({ item, onClose }: { item: typeof portfolioItems[0]; onC
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
       className="fixed inset-0 z-[150] flex items-center justify-center p-4 md:p-8"
-      style={{ background: "rgba(0,0,0,0.92)" }}
+      style={{ background: "rgba(0,0,0,0.92)", paddingTop: "5rem" }}
       onClick={onClose}
     >
       <motion.div
@@ -98,7 +141,7 @@ function PortfolioModal({ item, onClose }: { item: typeof portfolioItems[0]; onC
         style={{
           width: "100%",
           maxWidth: 900,
-          maxHeight: "90vh",
+          maxHeight: "82vh",
           overflowY: "auto",
           background: "var(--card)",
           border: "4px solid var(--foreground)",
@@ -151,7 +194,7 @@ function PortfolioModal({ item, onClose }: { item: typeof portfolioItems[0]; onC
             </h2>
           </div>
 
-          {/* Artwork placeholder — comic-panel aspect */}
+          {/* Artwork image / placeholder */}
           <div style={{
             aspectRatio: "16/7",
             background: "var(--background)",
@@ -161,29 +204,45 @@ function PortfolioModal({ item, onClose }: { item: typeof portfolioItems[0]; onC
             overflow: "hidden",
             display: "flex", alignItems: "center", justifyContent: "center",
           }}>
-            {/* Halftone fill */}
-            <div style={{
-              position: "absolute", inset: 0,
-              backgroundImage: `radial-gradient(circle, var(--${item.color}) 1.5px, transparent 1.5px)`,
-              backgroundSize: "20px 20px",
-              opacity: 0.15,
-            }} />
-            <span style={{
-              fontFamily: "var(--font-bangers)",
-              fontSize: "1.5rem",
-              color: "var(--muted-foreground)",
-              opacity: 0.4,
-              letterSpacing: "0.15em",
-            }}>
-              ARTWORK
-            </span>
+            {item.media_type === "video" && item.video_url ? (
+              <video
+                src={item.video_url}
+                controls
+                playsInline
+                style={{ width: "100%", height: "100%", objectFit: "contain", background: "#000" }}
+              />
+            ) : item.image_url ? (
+              <img
+                src={item.image_url}
+                alt={item.title}
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            ) : (
+              <>
+                <div style={{
+                  position: "absolute", inset: 0,
+                  backgroundImage: `radial-gradient(circle, var(--${item.color}) 1.5px, transparent 1.5px)`,
+                  backgroundSize: "20px 20px",
+                  opacity: 0.15,
+                }} />
+                <span style={{
+                  fontFamily: "var(--font-bangers)",
+                  fontSize: "1.5rem",
+                  color: "var(--muted-foreground)",
+                  opacity: 0.4,
+                  letterSpacing: "0.15em",
+                }}>
+                  ARTWORK
+                </span>
+              </>
+            )}
             {/* Panel number */}
             <span style={{
               position: "absolute", bottom: 8, right: 16,
               fontFamily: "var(--font-bangers)", fontSize: "5rem",
               color: "var(--border)", opacity: 0.25,
             }}>
-              {String(item.id).padStart(2, "0")}
+              {String(item.title).slice(0, 2).toUpperCase()}
             </span>
           </div>
 
@@ -377,8 +436,24 @@ function DrawBorder({ active }: { active: boolean }) {
 }
 
 export function PortfolioSection() {
-  const [selectedItem, setSelectedItem] = useState<typeof portfolioItems[0] | null>(null)
-  const [hoveredId, setHoveredId] = useState<number | null>(null)
+  const [rawArtworks, setRawArtworks] = useState<Artwork[]>([])
+  const [loading, setLoading] = useState(true)
+  const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null)
+  const [hoveredId, setHoveredId] = useState<string | number | null>(null)
+
+  useEffect(() => {
+    fetch("/api/artworks")
+      .then(r => r.json())
+      .then(data => {
+        setRawArtworks(Array.isArray(data) ? data : [])
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [])
+
+  const portfolioItems = rawArtworks.length > 0
+    ? rawArtworks.map(mapArtwork)
+    : portfolioItems_PLACEHOLDER
 
   return (
     <section id="portfolio" className="relative py-24 bg-background overflow-hidden">
@@ -426,6 +501,49 @@ export function PortfolioSection() {
               <DrawBorder active={hoveredId === item.id} />
 
               <div className="comic-panel h-full bg-card relative overflow-hidden">
+                {/* Artwork media — video thumbnail or image */}
+                {item.media_type === "video" && item.video_url ? (
+                  <>
+                    <video
+                      src={item.video_url}
+                      muted playsInline preload="metadata"
+                      style={{
+                        position: "absolute", inset: 0,
+                        width: "100%", height: "100%",
+                        objectFit: "cover", opacity: 0.45,
+                        transition: "opacity 0.3s",
+                        pointerEvents: "none",
+                      }}
+                    />
+                    {/* Play badge */}
+                    <div style={{
+                      position: "absolute", top: "50%", left: "50%",
+                      transform: "translate(-50%, -50%)",
+                      width: 44, height: 44,
+                      background: "rgba(0,0,0,0.7)",
+                      border: "2px solid var(--primary)",
+                      borderRadius: "50%",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      zIndex: 3, pointerEvents: "none",
+                    }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--primary)">
+                        <polygon points="5,3 19,12 5,21" />
+                      </svg>
+                    </div>
+                  </>
+                ) : item.image_url ? (
+                  <img
+                    src={item.image_url}
+                    alt={item.title}
+                    style={{
+                      position: "absolute", inset: 0,
+                      width: "100%", height: "100%",
+                      objectFit: "cover", opacity: 0.45,
+                      transition: "opacity 0.3s",
+                    }}
+                    className="group-hover:opacity-70"
+                  />
+                ) : null}
                 <div className={`absolute inset-0 bg-gradient-to-br transition-opacity duration-500 ${item.color === "primary" ? "from-primary/20 via-transparent to-background" : "from-accent/20 via-transparent to-background"}`} />
                 <div className={`absolute top-0 right-0 w-1/2 h-full ${item.color === "primary" ? "bg-border/20" : "bg-border/10"} clip-diagonal-bl transform group-hover:translate-x-4 transition-transform duration-700`} />
 
@@ -446,7 +564,7 @@ export function PortfolioSection() {
                 </div>
 
                 <div className="absolute bottom-2 right-4 font-[var(--font-bangers)] text-4xl text-border/20 group-hover:text-primary/20 transition-colors duration-500">
-                  {String(item.id).padStart(2, "0")}
+                  {String(index + 1).padStart(2, "0")}
                 </div>
               </div>
             </motion.div>

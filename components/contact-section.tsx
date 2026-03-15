@@ -92,19 +92,30 @@ export function ContactSection() {
   const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" })
   const [submitted, setSubmitted] = useState(false)
   const [sending, setSending] = useState(false)
+  const [error, setError] = useState("")
   const btnRef = useRef<HTMLButtonElement>(null)
 
   const set = (k: keyof typeof form) => (v: string) => setForm(f => ({ ...f, [k]: v }))
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (sending || submitted) return
+    setError("")
     setSending(true)
-    // Simulate send
-    setTimeout(() => {
-      setSending(false)
+
+    const res = await fetch("/api/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+    })
+
+    if (res.ok) {
       setSubmitted(true)
-    }, 1200)
+    } else {
+      const data = await res.json()
+      setError(data.error || "Something went wrong. Please try again.")
+    }
+    setSending(false)
   }
 
   return (
@@ -236,6 +247,19 @@ export function ContactSection() {
                     </div>
                     <InkInput label="SUBJECT" placeholder="Mission briefing..." value={form.subject} onChange={set("subject")} name="subject" />
                     <InkInput label="MESSAGE" placeholder="Describe your vision..." rows={5} value={form.message} onChange={set("message")} name="message" />
+
+                    {error && (
+                      <div style={{
+                        padding: "0.6rem 0.75rem",
+                        border: "2px solid #ef4444",
+                        background: "color-mix(in srgb, #ef4444 10%, transparent)",
+                        fontFamily: "var(--font-geist)",
+                        fontSize: "0.8rem",
+                        color: "#ef4444",
+                      }}>
+                        {error}
+                      </div>
+                    )}
 
                     <button
                       ref={btnRef}
