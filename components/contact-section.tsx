@@ -155,7 +155,7 @@ export function ContactSection() {
                 </div>
                 <div>
                   <h3 className="font-[var(--font-bangers)] text-xl text-foreground mb-1">DIRECT LINE</h3>
-                  <p className="font-[var(--font-geist)] text-muted-foreground">hello@darkknight.studio</p>
+                  <p className="font-[var(--font-geist)] text-muted-foreground">pixelbyaarya@gmail.com</p>
                 </div>
               </div>
             </motion.div>
@@ -173,7 +173,7 @@ export function ContactSection() {
                 </div>
                 <div>
                   <h3 className="font-[var(--font-bangers)] text-xl text-foreground mb-1">LOCATION</h3>
-                  <p className="font-[var(--font-geist)] text-muted-foreground">Gotham City, USA</p>
+                  <p className="font-[var(--font-geist)] text-muted-foreground">Pune, India</p>
                 </div>
               </div>
             </motion.div>
@@ -353,7 +353,7 @@ export function ContactSection() {
       >
         <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="font-[var(--font-geist)] text-sm text-muted-foreground">
-            © 2026 Dark Knight Studios. All rights reserved.
+            © 2026 Pixel by Aarya. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
             {["TWITTER", "DRIBBBLE", "BEHANCE"].map(social => (
