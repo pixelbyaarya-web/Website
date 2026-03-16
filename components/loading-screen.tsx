@@ -65,7 +65,7 @@ const BATMAN_PANELS = [
             <svg viewBox="0 0 80 80" style={{ width: 64, height: 64 }}>
                 {/* DK monogram */}
                 <text x="10" y="58" fontFamily="serif" fontSize="52" fontWeight="bold"
-                    fill="none" stroke="currentColor" strokeWidth="1.5" letterSpacing="-4">DK</text>
+                    fill="none" stroke="currentColor" strokeWidth="1.5" letterSpacing="-4">AN</text>
                 {/* Underline accent */}
                 <line x1="10" y1="65" x2="70" y2="65" stroke="currentColor" strokeWidth="3" />
             </svg>
