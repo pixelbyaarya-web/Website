@@ -58,8 +58,8 @@ export function HeroSection() {
                   transition={{ delay: 0.5, duration: 0.6 }}
                   className="font-[var(--font-bangers)] text-5xl md:text-7xl lg:text-8xl comic-title text-foreground mb-6"
                 >
-                  GRAPHIC<br />
-                  <span className="text-primary">DESIGNER</span>
+                  ILLUSTRATOR<br />
+                  <span className="text-primary">& ANIMATOR</span>
                 </motion.h1>
 
                 <motion.p
@@ -109,7 +109,7 @@ export function HeroSection() {
             >
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent" />
               <div className="relative h-full flex flex-col justify-center items-center p-6 text-center">
-                <span className="font-[var(--font-bangers)] text-4xl lg:text-5xl text-primary">10+</span>
+                <span className="font-[var(--font-bangers)] text-4xl lg:text-5xl text-primary">3</span>
                 <span className="font-[var(--font-geist)] text-sm text-muted-foreground mt-2">YEARS OF CHAOS</span>
               </div>
               <div className="absolute bottom-2 right-3 font-[var(--font-bangers)] text-3xl text-border/30">02</div>
@@ -124,7 +124,7 @@ export function HeroSection() {
             >
               <div className="absolute inset-0 bg-gradient-to-bl from-accent/20 to-transparent" />
               <div className="relative h-full flex flex-col justify-center items-center p-6 text-center">
-                <span className="font-[var(--font-bangers)] text-4xl lg:text-5xl text-accent">200+</span>
+                <span className="font-[var(--font-bangers)] text-4xl lg:text-5xl text-accent">3+</span>
                 <span className="font-[var(--font-geist)] text-sm text-muted-foreground mt-2">PROJECTS COMPLETED</span>
               </div>
               <div className="absolute bottom-2 right-3 font-[var(--font-bangers)] text-3xl text-border/30">03</div>
@@ -140,11 +140,11 @@ export function HeroSection() {
           className="absolute bottom-0 left-0 right-0 h-20 bg-primary/10 clip-slant-left flex items-center justify-center"
         >
           <div className="flex items-center gap-8 font-[var(--font-bangers)] text-muted-foreground tracking-widest text-sm">
-            <span>BRANDING</span>
+            <span>ANIMATION</span>
             <span className="w-2 h-2 bg-primary rotate-45" />
             <span>ILLUSTRATION</span>
             <span className="w-2 h-2 bg-accent rotate-45" />
-            <span>UI DESIGN</span>
+            <span>STORY BOARDING</span>
             <span className="w-2 h-2 bg-primary rotate-45" />
             <span>CONCEPT ART</span>
           </div>

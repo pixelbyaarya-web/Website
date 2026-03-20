@@ -5,45 +5,38 @@ import { motion } from "framer-motion"
 
 const timelineEvents = [
   {
-    year: "2013",
+    year: "2012",
     title: "THE SPARK",
-    caption: "Picked up a copy of Photoshop CS5 and accidentally deleted the sky from a family photo. Never looked back.",
+    caption: "Started sketching in the margins of old newspapers—never really cared what the headlines said after that.",
     panel: "01",
     wide: true,
   },
   {
-    year: "2015",
-    title: "FIRST CLIENT",
-    caption: "A local band paid in pizza. The logo was terrible. The pizza was incredible. A fair trade.",
+    year: "2017",
+    title: "GOES DARK",
+    caption: "Got into comics and fell down the rabbit hole of superhero lore—never really came back out.",
     panel: "02",
     wide: false,
   },
   {
-    year: "2017",
-    title: "GOES DARK",
-    caption: "Discovered brutalist design, Swiss typography, and the works of Saul Bass. Became insufferable at parties.",
-    panel: "03",
-    wide: false,
-  },
-  {
-    year: "2019",
+    year: "2023",
     title: "STUDIO BORN",
-    caption: "Dark Knight Studios opens its doors. First official project: a rebrand for a Gotham-themed escape room.",
-    panel: "04",
+    caption: "Took a Gulzar poem and gave it motion—somewhere between frames, it stopped being just words.",
+    panel: "03",
     wide: true,
   },
   {
-    year: "2021",
-    title: "200 PROJECTS",
-    caption: "Hit the 200-project milestone. Celebrated alone in a dark room surrounded by Pantone swatches. Perfect.",
-    panel: "05",
+    year: "2025",
+    title: "PROJECTS",
+    caption: "Wrapped one motion graphics projects in Clip Studio Paint & Adobe After Effects—already halfway to the third.",
+    panel: "04",
     wide: false,
   },
   {
     year: "NOW",
     title: "STILL HUNGRY",
     caption: "Building stranger, bolder, darker work. Looking for the next story worth telling.",
-    panel: "06",
+    panel: "05",
     wide: false,
   },
 ]
@@ -74,7 +67,7 @@ function TimelinePanel({
   return (
     <div
       ref={ref}
-      className={`relative flex-shrink-0 ${event.wide ? "w-72 md:w-96" : "w-56 md:w-72"}`}
+      className="relative flex-shrink-0 w-56 md:w-72"
       style={{
         opacity: visible ? 1 : 0,
         transform: visible
@@ -105,7 +98,7 @@ function TimelinePanel({
       }}>
         {/* Artwork placeholder */}
         <div style={{
-          height: event.wide ? 200 : 150,
+          height: 150,
           background: "var(--background)",
           position: "relative",
           overflow: "hidden",
@@ -231,7 +224,7 @@ export function AboutSection() {
               </div>
               <div className="space-y-3">
                 {[
-                  { label: "ALIAS", value: "THE DESIGNER", color: "text-primary" },
+                  { label: "ALIAS", value: "THE STORYTELLER", color: "text-primary" },
                   { label: "CLASS", value: "VISUAL ARTIST", color: "text-foreground" },
                   { label: "POWERS", value: "CREATIVITY LV.99", color: "text-accent" },
                 ].map(row => (
@@ -248,14 +241,14 @@ export function AboutSection() {
             <motion.div initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: 0.2, duration: 0.5 }}>
               <div className="speech-bubble max-w-xl ml-auto">
                 <p className="font-[var(--font-geist)] text-base leading-relaxed">
-                  {"They say every great villain has an origin story. Well, I'm not a villain—I'm just someone who fell in love with the shadows."}
+                  {"They say every great villain has an origin story. Well, I'm not a villain—I'm just someone who fell in love with the stylus."}
                 </p>
               </div>
             </motion.div>
 
             <motion.div initial={{ opacity: 0, x: 50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: 0.3, duration: 0.6 }} className="caption-box transform rotate-1">
               <p className="font-[var(--font-geist)] text-muted-foreground leading-relaxed">
-                With over a decade of experience in the dark arts of graphic design, I specialize in creating visual narratives that command attention. My work lives in the space between chaos and order.
+                With over 3 years of experience in the dark arts of graphic design, I specialize in creating visual narratives that command attention. My work lives in the space between chaos and order.
               </p>
             </motion.div>
 
@@ -263,11 +256,11 @@ export function AboutSection() {
               <h3 className="font-[var(--font-bangers)] text-2xl text-foreground mb-4">ABILITIES <span className="text-primary">&</span> SKILLS</h3>
               <div className="grid grid-cols-2 gap-4">
                 {[
-                  { skill: "Brand Identity", level: 95 },
+                  { skill: "AutoDesk Maya", level: 80 },
                   { skill: "Illustration", level: 90 },
-                  { skill: "UI/UX Design", level: 85 },
-                  { skill: "Motion Graphics", level: 80 },
-                  { skill: "Typography", level: 92 },
+                  { skill: "Adobe Creative Suite", level: 93 },
+                  { skill: "Motion Graphics", level: 85 },
+                  { skill: "Blender", level: 50 },
                   { skill: "Concept Art", level: 88 },
                 ].map((item, index) => (
                   <div key={item.skill} className="space-y-1">

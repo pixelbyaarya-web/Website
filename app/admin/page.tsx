@@ -94,7 +94,7 @@ export default function AdminLoginPage() {
           marginBottom: "1rem",
           textTransform: "uppercase",
         }}>
-          DARK KNIGHT STUDIOS — ADMIN ACCESS
+          PIXEL BY AARYA — ADMIN ACCESS
         </p>
 
         <div style={{

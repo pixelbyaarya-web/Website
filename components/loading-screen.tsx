@@ -124,7 +124,7 @@ const JOKER_PANELS = [
         icon: (
             <svg viewBox="0 0 80 80" style={{ width: 64, height: 64 }}>
                 <text x="8" y="58" fontFamily="serif" fontSize="52" fontWeight="bold"
-                    fill="none" stroke="currentColor" strokeWidth="1.5" letterSpacing="-4">DK</text>
+                    fill="none" stroke="currentColor" strokeWidth="1.5" letterSpacing="-4">AN</text>
                 <path d="M10 68 Q40 60 70 68" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
             </svg>
         ),
