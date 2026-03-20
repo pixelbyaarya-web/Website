@@ -7,7 +7,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase-browser"
 import { Plus, Pencil, Trash2, LogOut, X, GripVertical, Loader2, CheckCircle } from "lucide-react"
 import type { Artwork } from "@/lib/types"
 
-const CATEGORIES = ["BRAND IDENTITY", "ILLUSTRATION", "BOOK DESIGN", "POSTER SERIES", "UI/UX DESIGN", "CONCEPT ART", "PHOTOGRAPHY", "TYPOGRAPHY"]
+const CATEGORIES = ["ILLUSTRATION", "CONCEPT ART", "STORYBOARDING", "MOTION GRAPHICS", "2D ANIMATION", "3D ANIMATION"]
 
 // ── Inline editable text ──────────────────────────────────────────────────
 function EditableText({
