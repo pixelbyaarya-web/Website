@@ -196,7 +196,7 @@ export function LoadingScreen() {
                     {/* Comic strip — 4 panels in a row */}
                     <div style={{
                         display: "flex",
-                        gap: "0.375rem",
+                        gap: "1rem",
                         maxWidth: "min(92vw, 820px)",
                         width: "100%",
                         height: "clamp(180px, 35vh, 280px)",
