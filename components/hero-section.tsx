@@ -137,16 +137,21 @@ export function HeroSection() {
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1, duration: 0.6 }}
-          className="absolute bottom-0 left-0 right-0 h-20 bg-primary/10 clip-slant-left flex items-center justify-center"
+          className="relative lg:absolute bottom-0 left-0 right-0 h-16 lg:h-20 bg-primary/10 lg:clip-slant-left flex items-center overflow-hidden mt-8 lg:mt-0"
         >
-          <div className="flex items-center gap-8 font-[var(--font-bangers)] text-muted-foreground tracking-widest text-sm">
-            <span>ANIMATION</span>
-            <span className="w-2 h-2 bg-primary rotate-45" />
-            <span>ILLUSTRATION</span>
-            <span className="w-2 h-2 bg-accent rotate-45" />
-            <span>STORY BOARDING</span>
-            <span className="w-2 h-2 bg-primary rotate-45" />
-            <span>CONCEPT ART</span>
+          <div className="flex items-center gap-8 font-[var(--font-bangers)] text-muted-foreground tracking-widest text-sm whitespace-nowrap px-4 animate-marquee lg:animate-none lg:justify-center lg:w-full">
+            {[1, 2, 3].map((_, i) => (
+              <div key={i} className="flex items-center gap-8 shrink-0">
+                <span>ANIMATION</span>
+                <span className="w-2 h-2 bg-primary rotate-45" />
+                <span>ILLUSTRATION</span>
+                <span className="w-2 h-2 bg-accent rotate-45" />
+                <span>STORY BOARDING</span>
+                <span className="w-2 h-2 bg-primary rotate-45" />
+                <span>CONCEPT ART</span>
+                <span className="w-2 h-2 bg-accent rotate-45" />
+              </div>
+            ))}
           </div>
         </motion.div>
       </div>

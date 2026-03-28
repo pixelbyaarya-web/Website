@@ -141,7 +141,7 @@ function PortfolioModal({ item, onClose }: { item: PortfolioItem; onClose: () =>
         style={{
           width: "100%",
           maxWidth: 900,
-          maxHeight: "82vh",
+          maxHeight: "90vh",
           overflowY: "auto",
           background: "var(--card)",
           border: "4px solid var(--foreground)",
@@ -164,7 +164,7 @@ function PortfolioModal({ item, onClose }: { item: PortfolioItem; onClose: () =>
           <X size={18} style={{ color: "var(--primary-foreground)" }} />
         </button>
 
-        <div style={{ padding: "2rem" }}>
+        <div className="p-6 md:p-12">
           {/* Header */}
           <div style={{ marginBottom: "1.5rem" }}>
             <span style={{
@@ -195,15 +195,7 @@ function PortfolioModal({ item, onClose }: { item: PortfolioItem; onClose: () =>
           </div>
 
           {/* Artwork image / placeholder */}
-          <div style={{
-            aspectRatio: "16/7",
-            background: "var(--background)",
-            border: "3px solid var(--border)",
-            marginBottom: "1.5rem",
-            position: "relative",
-            overflow: "hidden",
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}>
+          <div className="aspect-[4/3] md:aspect-[16/7] bg-background border-3 border-border mb-6 relative overflow-hidden flex items-center justify-center">
             {item.media_type === "video" && item.video_url ? (
               <video
                 src={item.video_url}
@@ -246,7 +238,7 @@ function PortfolioModal({ item, onClose }: { item: PortfolioItem; onClose: () =>
             </span>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Description */}
             <div>
               <div style={{

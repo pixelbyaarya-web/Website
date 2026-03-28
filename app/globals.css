@@ -253,6 +253,17 @@
   }
 }
 
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex !important;
+  width: max-content !important;
+  animation: marquee 25s linear infinite;
+}
+
 /* Comic Panel Styles */
 .comic-panel {
   position: relative;
@@ -485,8 +496,10 @@ body::before {
   }
 
   /* Hero text size */
-  .font-\[var\(--font-bangers\)\].text-8xl {
-    font-size: 3.5rem !important;
+  .font-\[var\(--font-bangers\)\].text-8xl,
+  .comic-title {
+    font-size: clamp(2.5rem, 10vw, 4.5rem) !important;
+    line-height: 1 !important;
   }
 }
 
