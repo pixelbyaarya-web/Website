@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createSupabaseServerClient, createSupabaseServiceClient } from "@/lib/supabase-server"
-import { uploadToImageKit, deleteFromImageKit } from "@/lib/imagekit"
+import { uploadToImageKit, uploadVideoToImageKit, deleteFromImageKit } from "@/lib/imagekit"
+
+export const maxDuration = 300
+export const config = {
+    api: {
+        bodyParser: {
+            sizeLimit: "200mb",
+        },
+    },
+}
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const authClient = await createSupabaseServerClient()
@@ -29,7 +38,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
             try { await deleteFromImageKit(existing.imagekit_file_id) } catch { }
         }
         const buffer = Buffer.from(await imageFile.arrayBuffer())
-        const result = await uploadToImageKit(buffer, imageFile.name, "/artworks/images")
+        const result = await uploadToImageKit(buffer, imageFile.name)
         updates.image_url = result.url
         updates.imagekit_file_id = result.fileId
     }
@@ -41,7 +50,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
             try { await deleteFromImageKit(existing.video_filekit_id) } catch { }
         }
         const buffer = Buffer.from(await videoFile.arrayBuffer())
-        const result = await uploadToImageKit(buffer, videoFile.name, "/artworks/videos")
+        const result = await uploadVideoToImageKit(buffer, videoFile.name)
         updates.video_url = result.url
         updates.video_filekit_id = result.fileId
         updates.media_type = "video"

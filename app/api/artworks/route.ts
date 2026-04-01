@@ -1,6 +1,18 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createSupabaseServerClient, createSupabaseServiceClient } from "@/lib/supabase-server"
-import { uploadToImageKit } from "@/lib/imagekit"
+import { uploadToImageKit, uploadVideoToImageKit } from "@/lib/imagekit"
+
+// Allow up to 5 minutes for video uploads on Vercel / serverless
+export const maxDuration = 300
+
+// Raise Next.js body-parser limit to 200 MB for video files
+export const config = {
+    api: {
+        bodyParser: {
+            sizeLimit: "200mb",
+        },
+    },
+}
 
 export async function GET() {
     const supabase = createSupabaseServiceClient()
@@ -40,7 +52,7 @@ export async function POST(req: NextRequest) {
 
     if (videoFile && videoFile.size > 0) {
         const buffer = Buffer.from(await videoFile.arrayBuffer())
-        const result = await uploadToImageKit(buffer, videoFile.name, "/artworks/videos")
+        const result = await uploadVideoToImageKit(buffer, videoFile.name)
         video_url = result.url
         video_filekit_id = result.fileId
         media_type = "video"
@@ -48,7 +60,7 @@ export async function POST(req: NextRequest) {
 
     if (imageFile && imageFile.size > 0) {
         const buffer = Buffer.from(await imageFile.arrayBuffer())
-        const result = await uploadToImageKit(buffer, imageFile.name, "/artworks/images")
+        const result = await uploadToImageKit(buffer, imageFile.name)
         image_url = result.url
         imagekit_file_id = result.fileId
         if (media_type !== "video") media_type = "image"
