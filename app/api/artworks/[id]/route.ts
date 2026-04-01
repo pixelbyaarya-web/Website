@@ -30,6 +30,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (formData.has("tags")) updates.tags = JSON.parse(formData.get("tags") as string)
     if (formData.has("process_steps")) updates.process_steps = JSON.parse(formData.get("process_steps") as string)
     if (formData.has("order")) updates.order = parseInt(formData.get("order") as string)
+    if (formData.has("media_type")) updates.media_type = formData.get("media_type")
 
     // Replace image
     const imageFile = formData.get("image") as File | null
@@ -43,17 +44,25 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         updates.imagekit_file_id = result.fileId
     }
 
-    // Replace video
-    const videoFile = formData.get("video") as File | null
-    if (videoFile && videoFile.size > 0) {
+    // Replace video (Client-side upload)
+    if (formData.has("video_url")) {
         if (existing?.video_filekit_id) {
             try { await deleteFromImageKit(existing.video_filekit_id) } catch { }
         }
-        const buffer = Buffer.from(await videoFile.arrayBuffer())
-        const result = await uploadVideoToImageKit(buffer, videoFile.name)
-        updates.video_url = result.url
-        updates.video_filekit_id = result.fileId
+        updates.video_url = formData.get("video_url")
+        updates.video_filekit_id = formData.get("video_filekit_id")
         updates.media_type = "video"
+    }
+    
+    // Handle video deletion
+    if (formData.has("remove_video_filekit_id")) {
+        const removeVideoFileId = formData.get("remove_video_filekit_id") as string
+        if (removeVideoFileId && existing?.video_filekit_id) {
+            try { await deleteFromImageKit(removeVideoFileId) } catch { }
+        }
+        updates.video_url = null
+        updates.video_filekit_id = null
+        updates.media_type = "image"
     }
 
     const { data, error } = await supabase

@@ -122,6 +122,14 @@ const panelConfigs = [
 function PortfolioModal({ item, onClose }: { item: PortfolioItem; onClose: () => void }) {
   const [processStep, setProcessStep] = useState(0)
 
+  // Lock scroll on mount, unlock on unmount
+  useEffect(() => {
+    document.body.style.overflow = "hidden"
+    return () => {
+      document.body.style.overflow = ""
+    }
+  }, [])
+
   return (
     <motion.div
       initial={{ opacity: 0 }}

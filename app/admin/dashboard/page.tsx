@@ -4,7 +4,8 @@ import { useEffect, useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser"
-import { Plus, Pencil, Trash2, LogOut, X, GripVertical, Loader2, CheckCircle } from "lucide-react"
+import { Plus, Pencil, Trash2, LogOut, X, GripVertical, Loader2, CheckCircle, AlertCircle } from "lucide-react"
+import { uploadVideoToImageKit, uploadImageToImageKit, validateVideoFile, formatFileSize, getVideoDuration, formatDuration, deleteVideoFromImageKit } from "@/lib/video-upload"
 import type { Artwork } from "@/lib/types"
 
 const CATEGORIES = ["ILLUSTRATION", "CONCEPT ART", "STORYBOARDING", "MOTION GRAPHICS", "2D ANIMATION", "3D ANIMATION"]
@@ -119,7 +120,7 @@ function ArtworkCard({
     artwork, onSave, onDelete, isNew = false, onCancelNew,
 }: {
     artwork: Partial<Artwork>
-    onSave: (data: Partial<Artwork>, imageFile?: File, videoFile?: File) => Promise<void>
+    onSave: (data: Partial<Artwork>, imageFile?: File, videoData?: { url: string; fileId: string }, removeVideoFileId?: string) => Promise<void>
     onDelete?: () => Promise<void>
     isNew?: boolean
     onCancelNew?: () => void
@@ -129,10 +130,15 @@ function ArtworkCard({
     const [videoFile, setVideoFile] = useState<File | null>(null)
     const [preview, setPreview] = useState<string | null>(artwork.image_url || null)
     const [videoPreview, setVideoPreview] = useState<string | null>((artwork as any).video_url || null)
+    const [videoFileId, setVideoFileId] = useState<string | null>((artwork as any).video_filekit_id || null)
     const [saving, setSaving] = useState(false)
     const [deleting, setDeleting] = useState(false)
     const [saved, setSaved] = useState(false)
     const [dirty, setDirty] = useState(isNew)
+    const [uploadProgress, setUploadProgress] = useState<{ image: number; video: number }>({ image: 0, video: 0 })
+    const [uploadError, setUploadError] = useState<string | null>(null)
+    const [videoDuration, setVideoDuration] = useState<number | null>(null)
+    const [deletingVideo, setDeletingVideo] = useState(false)
     const fileRef = useRef<HTMLInputElement>(null)
     const videoRef = useRef<HTMLInputElement>(null)
 
@@ -141,32 +147,124 @@ function ArtworkCard({
         setDirty(true)
     }
 
+    const uploadToImageKit = async (file: File, isVideo: boolean = false) => {
+        try {
+            setUploadError(null)
+            if (isVideo) {
+                return await uploadVideoToImageKit(file, (progress) => {
+                    setUploadProgress(p => ({ ...p, video: progress }))
+                })
+            } else {
+                return await uploadImageToImageKit(file, (progress) => {
+                    setUploadProgress(p => ({ ...p, image: progress }))
+                })
+            }
+        } catch (err: any) {
+            const errorMsg = err.message || "Upload failed"
+            setUploadError(errorMsg)
+            throw err
+        }
+    }
+
     const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
         const f = e.target.files?.[0]
         if (!f) return
         setImageFile(f)
         setPreview(URL.createObjectURL(f))
         setDirty(true)
+        setUploadError(null)
     }
 
-    const handleVideo = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleVideo = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const f = e.target.files?.[0]
         if (!f) return
+        
+        // Validate video file
+        const error = validateVideoFile(f)
+        if (error) {
+            setUploadError(error.message)
+            return
+        }
+        
         setVideoFile(f)
         setVideoPreview(URL.createObjectURL(f))
         set("media_type")("video")
+        setUploadError(null)
+        
+        // Get video duration
+        try {
+            const duration = await getVideoDuration(f)
+            setVideoDuration(duration)
+        } catch (err) {
+            console.warn("Could not determine video duration:", err)
+        }
+        
         setDirty(true)
+    }
+
+    const handleRemoveVideo = async () => {
+        setDeletingVideo(true)
+        setUploadError(null)
+        
+        // Clear UI state immediately for responsive feedback
+        setVideoFile(null)
+        setVideoPreview(null)
+        setVideoDuration(null)
+        set("media_type")("image")
+        setDirty(true)
+        
+        try {
+            // If it's an existing video with a fileId, delete from ImageKit
+            if (videoFileId) {
+                await deleteVideoFromImageKit(videoFileId)
+            }
+            
+            // Clear the file ID after successful deletion
+            setVideoFileId(null)
+        } catch (err: any) {
+            setUploadError(err.message || "Failed to remove video from ImageKit")
+            console.error("Error removing video:", err)
+        } finally {
+            setDeletingVideo(false)
+        }
     }
 
     const handleSave = async () => {
         setSaving(true)
-        await onSave(draft, imageFile || undefined, videoFile || undefined)
-        setSaving(false)
-        setSaved(true)
-        setDirty(false)
-        setImageFile(null)
-        setVideoFile(null)
-        setTimeout(() => setSaved(false), 2000)
+        setUploadError(null)
+        try {
+            let videoData = undefined
+            if (videoFile) {
+                // Upload video from client directly to bypass server limits
+                videoData = await uploadToImageKit(videoFile, true)
+            }
+            
+            // Check if we need to delete an existing video
+            // This happens when videoFileId exists but no new video was uploaded
+            let removeVideoFileId = undefined
+            if (videoFileId && !videoFile && !videoPreview) {
+                // Video was removed
+                removeVideoFileId = videoFileId
+            }
+            
+            let imageData = undefined
+            if (imageFile) {
+                // Upload image
+                imageData = imageFile
+            }
+
+            await onSave(draft, imageData || undefined, videoData, removeVideoFileId)
+            setSaving(false)
+            setSaved(true)
+            setDirty(false)
+            setImageFile(null)
+            setVideoFile(null)
+            setUploadProgress({ image: 0, video: 0 })
+            setTimeout(() => setSaved(false), 2000)
+        } catch (err: any) {
+            setUploadError(err.message || "Upload failed")
+            setSaving(false)
+        }
     }
 
     const handleDelete = async () => {
@@ -241,36 +339,125 @@ function ArtworkCard({
             <div style={{
                 borderTop: "2px solid var(--border)",
                 padding: "0.6rem 1rem",
-                display: "flex", alignItems: "center", gap: "0.75rem",
+                display: "flex", flexDirection: "column", gap: "0.5rem",
                 background: "var(--background)",
             }}>
-                <button
-                    type="button"
-                    onClick={() => videoRef.current?.click()}
-                    style={{
-                        display: "flex", alignItems: "center", gap: 6,
-                        padding: "0.35rem 0.75rem",
-                        background: videoPreview ? "color-mix(in srgb, var(--primary) 15%, transparent)" : "transparent",
-                        border: "1.5px solid var(--border)",
-                        color: videoPreview ? "var(--primary)" : "var(--muted-foreground)",
-                        fontFamily: "var(--font-bangers)", fontSize: "0.75rem",
-                        letterSpacing: "0.08em", cursor: "none",
-                    }}
-                >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
-                    </svg>
-                    {videoPreview ? "VIDEO ADDED ✓" : "ADD VIDEO"}
-                </button>
-                {videoPreview && (
+                {/* Upload error message */}
+                {uploadError && (
+                    <div style={{
+                        display: "flex", alignItems: "flex-start", gap: "0.5rem",
+                        padding: "0.5rem 0.75rem",
+                        background: "rgba(239, 68, 68, 0.1)",
+                        border: "1px solid #ef4444",
+                        borderRadius: 4,
+                    }}>
+                        <AlertCircle size={14} style={{ color: "#ef4444", marginTop: 2, flexShrink: 0 }} />
+                        <div style={{ flex: 1 }}>
+                            <p style={{ 
+                                fontFamily: "var(--font-geist)", 
+                                fontSize: "0.7rem", 
+                                color: "#ef4444",
+                                margin: 0,
+                                lineHeight: 1.3,
+                            }}>
+                                {uploadError}
+                            </p>
+                        </div>
+                        <button 
+                            onClick={() => setUploadError(null)}
+                            style={{ background: "none", border: "none", color: "#ef4444", padding: 0, cursor: "none" }}
+                        >
+                            <X size={12} />
+                        </button>
+                    </div>
+                )}
+                
+                {/* Video button and status */}
+                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                     <button
                         type="button"
-                        onClick={() => { setVideoFile(null); setVideoPreview(null); set("media_type")("image"); setDirty(true) }}
-                        style={{ background: "none", border: "none", color: "var(--muted-foreground)", fontSize: "0.7rem", cursor: "none", fontFamily: "var(--font-geist)" }}
+                        onClick={() => videoRef.current?.click()}
+                        disabled={saving}
+                        style={{
+                            display: "flex", alignItems: "center", gap: 6,
+                            padding: "0.35rem 0.75rem",
+                            background: videoPreview ? "color-mix(in srgb, var(--primary) 15%, transparent)" : "transparent",
+                            border: "1.5px solid var(--border)",
+                            color: videoPreview ? "var(--primary)" : "var(--muted-foreground)",
+                            fontFamily: "var(--font-bangers)", fontSize: "0.75rem",
+                            letterSpacing: "0.08em", cursor: saving ? "not-allowed" : "none",
+                            opacity: saving ? 0.6 : 1,
+                        }}
                     >
-                        remove
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+                        </svg>
+                        {videoPreview ? "VIDEO ADDED ✓" : "ADD VIDEO"}
                     </button>
+                    
+                    {videoPreview && (
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                            {videoDuration && (
+                                <span style={{ 
+                                    fontFamily: "var(--font-geist)", 
+                                    fontSize: "0.65rem", 
+                                    color: "var(--muted-foreground)",
+                                }}>
+                                    {formatDuration(videoDuration)}
+                                </span>
+                            )}
+                            <button
+                                type="button"
+                                onClick={handleRemoveVideo}
+                                disabled={deletingVideo || saving}
+                                style={{ 
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 4,
+                                    background: "none", 
+                                    border: "1px solid #ef4444",
+                                    padding: "0.2rem 0.5rem",
+                                    color: "#ef4444", 
+                                    fontSize: "0.7rem", 
+                                    cursor: deletingVideo || saving ? "not-allowed" : "none",
+                                    fontFamily: "var(--font-geist)",
+                                    opacity: deletingVideo || saving ? 0.6 : 1,
+                                }}
+                            >
+                                {deletingVideo ? (
+                                    <>
+                                        <Loader2 size={10} className="animate-spin" />
+                                        REMOVING...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Trash2 size={10} />
+                                        REMOVE
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    )}
+                </div>
+                
+                {/* Video upload progress bar */}
+                {uploadProgress.video > 0 && uploadProgress.video < 100 && (
+                    <div style={{
+                        width: "100%",
+                        height: 4,
+                        background: "var(--border)",
+                        borderRadius: 2,
+                        overflow: "hidden",
+                    }}>
+                        <div style={{
+                            height: "100%",
+                            width: `${uploadProgress.video}%`,
+                            background: "var(--primary)",
+                            transition: "width 0.2s",
+                        }} />
+                    </div>
                 )}
+                
                 <input ref={videoRef} type="file" accept="video/*" onChange={handleVideo} style={{ display: "none" }} />
             </div>
 
@@ -418,7 +605,7 @@ export default function DashboardPage() {
         setLoading(false)
     }
 
-    const handleCreate = async (draft: Partial<Artwork>, imageFile?: File, videoFile?: File) => {
+    const handleCreate = async (draft: Partial<Artwork>, imageFile?: File, videoData?: { url: string; fileId: string }, removeVideoFileId?: string) => {
         const fd = new FormData()
         fd.append("title", draft.title || "Untitled")
         fd.append("category", draft.category || "")
@@ -426,22 +613,39 @@ export default function DashboardPage() {
         fd.append("tags", JSON.stringify(draft.tags || []))
         fd.append("process_steps", JSON.stringify(draft.process_steps || []))
         fd.append("order", String(artworks.length))
+        
         if (imageFile) fd.append("image", imageFile)
-        if (videoFile) fd.append("video", videoFile)
+        
+        // Pass pre-uploaded video metadata
+        if (videoData) {
+            fd.append("video_url", videoData.url)
+            fd.append("video_filekit_id", videoData.fileId)
+        }
 
         const res = await fetch("/api/artworks", { method: "POST", body: fd })
         if (res.ok) { setShowNew(false); fetchArtworks() }
     }
 
-    const handleUpdate = (id: string) => async (draft: Partial<Artwork>, imageFile?: File, videoFile?: File) => {
+    const handleUpdate = (id: string) => async (draft: Partial<Artwork>, imageFile?: File, videoData?: { url: string; fileId: string }, removeVideoFileId?: string) => {
         const fd = new FormData()
         if (draft.title !== undefined) fd.append("title", draft.title)
         if (draft.category !== undefined) fd.append("category", draft.category)
         if (draft.description !== undefined) fd.append("description", draft.description || "")
         if (draft.tags !== undefined) fd.append("tags", JSON.stringify(draft.tags))
         if (draft.process_steps !== undefined) fd.append("process_steps", JSON.stringify(draft.process_steps))
+        if (draft.media_type !== undefined) fd.append("media_type", draft.media_type)
+        
         if (imageFile) fd.append("image", imageFile)
-        if (videoFile) fd.append("video", videoFile)
+        
+        if (videoData) {
+            fd.append("video_url", videoData.url)
+            fd.append("video_filekit_id", videoData.fileId)
+        }
+        
+        // Pass video file ID to delete
+        if (removeVideoFileId) {
+            fd.append("remove_video_filekit_id", removeVideoFileId)
+        }
 
         await fetch(`/api/artworks/${id}`, { method: "PATCH", body: fd })
         fetchArtworks()

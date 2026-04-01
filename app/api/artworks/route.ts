@@ -39,8 +39,6 @@ export async function POST(req: NextRequest) {
     const processSteps = JSON.parse(formData.get("process_steps") as string || "[]")
     const order = parseInt(formData.get("order") as string || "0")
     const imageFile = formData.get("image") as File | null
-    const videoFile = formData.get("video") as File | null
-
     if (!title || !category)
         return NextResponse.json({ error: "Title and category required" }, { status: 400 })
 
@@ -50,14 +48,14 @@ export async function POST(req: NextRequest) {
     let video_filekit_id: string | null = null
     let media_type: "image" | "video" = "image"
 
-    if (videoFile && videoFile.size > 0) {
-        const buffer = Buffer.from(await videoFile.arrayBuffer())
-        const result = await uploadVideoToImageKit(buffer, videoFile.name)
-        video_url = result.url
-        video_filekit_id = result.fileId
+    // If client already uploaded video
+    if (formData.has("video_url")) {
+        video_url = formData.get("video_url") as string
+        video_filekit_id = formData.get("video_filekit_id") as string
         media_type = "video"
     }
 
+    // Handle image upload (server-side is fine for images)
     if (imageFile && imageFile.size > 0) {
         const buffer = Buffer.from(await imageFile.arrayBuffer())
         const result = await uploadToImageKit(buffer, imageFile.name)
@@ -76,6 +74,9 @@ export async function POST(req: NextRequest) {
         .select()
         .single()
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    if (error) {
+        console.error("Supabase insert error:", error)
+        return NextResponse.json({ error: error.message }, { status: 500 })
+    }
     return NextResponse.json(data, { status: 201 })
 }
