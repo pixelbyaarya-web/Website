@@ -120,15 +120,18 @@ function ArtworkCard({
     artwork, onSave, onDelete, isNew = false, onCancelNew,
 }: {
     artwork: Partial<Artwork>
-    onSave: (data: Partial<Artwork>, imageFile?: File, videoData?: { url: string; fileId: string }, removeVideoFileId?: string) => Promise<void>
+    onSave: (data: Partial<Artwork>, imageFiles: File[], videoData?: { url: string; fileId: string }, removeVideoFileId?: string) => Promise<void>
     onDelete?: () => Promise<void>
     isNew?: boolean
     onCancelNew?: () => void
 }) {
-    const [draft, setDraft] = useState<Partial<Artwork>>({ ...artwork })
-    const [imageFile, setImageFile] = useState<File | null>(null)
+    const [draft, setDraft] = useState<Partial<Artwork>>({
+        ...artwork,
+        image_urls: artwork.image_urls || (artwork.image_url ? [artwork.image_url] : []),
+        image_file_ids: artwork.image_file_ids || (artwork.imagekit_file_id ? [artwork.imagekit_file_id] : []),
+    })
+    const [newImageFiles, setNewImageFiles] = useState<File[]>([])
     const [videoFile, setVideoFile] = useState<File | null>(null)
-    const [preview, setPreview] = useState<string | null>(artwork.image_url || null)
     const [videoPreview, setVideoPreview] = useState<string | null>((artwork as any).video_url || null)
     const [videoFileId, setVideoFileId] = useState<string | null>((artwork as any).video_filekit_id || null)
     const [saving, setSaving] = useState(false)
@@ -167,12 +170,32 @@ function ArtworkCard({
     }
 
     const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const f = e.target.files?.[0]
-        if (!f) return
-        setImageFile(f)
-        setPreview(URL.createObjectURL(f))
+        const files = Array.from(e.target.files || [])
+        if (!files.length) return
+
+        const currentCount = (draft.image_urls?.length || 0) + newImageFiles.length
+        if (currentCount + files.length > 3) {
+            setUploadError("Maximum 3 images allowed per artwork")
+            return
+        }
+
+        setNewImageFiles(prev => [...prev, ...files])
         setDirty(true)
         setUploadError(null)
+    }
+
+    const removeExistingImage = (index: number) => {
+        const urls = [...(draft.image_urls || [])]
+        const ids = [...(draft.image_file_ids || [])]
+        urls.splice(index, 1)
+        ids.splice(index, 1)
+        setDraft(d => ({ ...d, image_urls: urls, image_file_ids: ids }))
+        setDirty(true)
+    }
+
+    const removeNewImage = (index: number) => {
+        setNewImageFiles(prev => prev.filter((_, i) => i !== index))
+        setDirty(true)
     }
 
     const handleVideo = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -235,29 +258,19 @@ function ArtworkCard({
         try {
             let videoData = undefined
             if (videoFile) {
-                // Upload video from client directly to bypass server limits
                 videoData = await uploadToImageKit(videoFile, true)
             }
             
-            // Check if we need to delete an existing video
-            // This happens when videoFileId exists but no new video was uploaded
             let removeVideoFileId = undefined
             if (videoFileId && !videoFile && !videoPreview) {
-                // Video was removed
                 removeVideoFileId = videoFileId
             }
-            
-            let imageData = undefined
-            if (imageFile) {
-                // Upload image
-                imageData = imageFile
-            }
 
-            await onSave(draft, imageData || undefined, videoData, removeVideoFileId)
+            await onSave(draft, newImageFiles, videoData, removeVideoFileId)
             setSaving(false)
             setSaved(true)
             setDirty(false)
-            setImageFile(null)
+            setNewImageFiles([])
             setVideoFile(null)
             setUploadProgress({ image: 0, video: 0 })
             setTimeout(() => setSaved(false), 2000)
@@ -299,40 +312,62 @@ function ArtworkCard({
 
             {/* Image area */}
             <div
-                onClick={() => fileRef.current?.click()}
                 style={{
                     height: 180, background: "var(--background)",
                     borderBottom: "2px solid var(--border)",
                     position: "relative", overflow: "hidden",
-                    cursor: "none", display: "flex",
-                    alignItems: "center", justifyContent: "center",
+                    display: "flex", gap: "2px",
                 }}
             >
-                {preview ? (
-                    <img src={preview} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                ) : (
-                    <div style={{ textAlign: "center", color: "var(--muted-foreground)" }}>
+                {/* Image Grid */}
+                {((draft.image_urls?.length || 0) + newImageFiles.length) === 0 ? (
+                    <div 
+                        onClick={() => fileRef.current?.click()}
+                        style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", cursor: "none", color: "var(--muted-foreground)" }}
+                    >
                         <Plus size={28} style={{ margin: "0 auto 0.25rem" }} />
                         <p style={{ fontFamily: "var(--font-geist)", fontSize: "0.7rem", letterSpacing: "0.1em" }}>
-                            CLICK TO ADD IMAGE
+                            ADD IMAGES (MAX 3)
                         </p>
                     </div>
+                ) : (
+                    <div style={{ display: "flex", width: "100%", height: "100%" }}>
+                        {/* Existing Images */}
+                        {draft.image_urls?.map((url, i) => (
+                            <div key={`existing-${i}`} style={{ flex: 1, position: "relative", borderRight: "1px solid var(--border)" }}>
+                                <img src={url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                <button 
+                                    onClick={() => removeExistingImage(i)}
+                                    style={{ position: "absolute", top: 4, right: 4, background: "rgba(0,0,0,0.5)", color: "white", border: "none", borderRadius: "50%", padding: 4, cursor: "none" }}
+                                >
+                                    <X size={12} />
+                                </button>
+                            </div>
+                        ))}
+                        {/* New Images */}
+                        {newImageFiles.map((file, i) => (
+                            <div key={`new-${i}`} style={{ flex: 1, position: "relative", borderRight: "1px solid var(--border)" }}>
+                                <img src={URL.createObjectURL(file)} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                <button 
+                                    onClick={() => removeNewImage(i)}
+                                    style={{ position: "absolute", top: 4, right: 4, background: "var(--primary)", color: "white", border: "none", borderRadius: "50%", padding: 4, cursor: "none" }}
+                                >
+                                    <X size={12} />
+                                </button>
+                            </div>
+                        ))}
+                        {/* Add more button if < 3 */}
+                        {((draft.image_urls?.length || 0) + newImageFiles.length) < 3 && (
+                            <div 
+                                onClick={() => fileRef.current?.click()}
+                                style={{ width: 80, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.05)", cursor: "none" }}
+                            >
+                                <Plus size={20} style={{ color: "var(--muted-foreground)" }} />
+                            </div>
+                        )}
+                    </div>
                 )}
-                {/* Hover overlay */}
-                <div style={{
-                    position: "absolute", inset: 0,
-                    background: "rgba(0,0,0,0.5)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    opacity: 0, transition: "opacity 0.2s",
-                }}
-                    onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
-                    onMouseLeave={e => (e.currentTarget.style.opacity = "0")}
-                >
-                    <p style={{ fontFamily: "var(--font-bangers)", fontSize: "0.9rem", color: "white", letterSpacing: "0.1em" }}>
-                        {preview ? "CHANGE IMAGE" : "UPLOAD IMAGE"}
-                    </p>
-                </div>
-                <input ref={fileRef} type="file" accept="image/*" onChange={handleImage} style={{ display: "none" }} />
+                <input ref={fileRef} type="file" accept="image/*" multiple onChange={handleImage} style={{ display: "none" }} />
             </div>
 
             {/* Video upload strip */}
@@ -605,7 +640,7 @@ export default function DashboardPage() {
         setLoading(false)
     }
 
-    const handleCreate = async (draft: Partial<Artwork>, imageFile?: File, videoData?: { url: string; fileId: string }, removeVideoFileId?: string) => {
+    const handleCreate = async (draft: Partial<Artwork>, imageFiles: File[], videoData?: { url: string; fileId: string }, removeVideoFileId?: string) => {
         const fd = new FormData()
         fd.append("title", draft.title || "Untitled")
         fd.append("category", draft.category || "")
@@ -614,9 +649,8 @@ export default function DashboardPage() {
         fd.append("process_steps", JSON.stringify(draft.process_steps || []))
         fd.append("order", String(artworks.length))
         
-        if (imageFile) fd.append("image", imageFile)
+        imageFiles.forEach(f => fd.append("images", f))
         
-        // Pass pre-uploaded video metadata
         if (videoData) {
             fd.append("video_url", videoData.url)
             fd.append("video_filekit_id", videoData.fileId)
@@ -626,7 +660,7 @@ export default function DashboardPage() {
         if (res.ok) { setShowNew(false); fetchArtworks() }
     }
 
-    const handleUpdate = (id: string) => async (draft: Partial<Artwork>, imageFile?: File, videoData?: { url: string; fileId: string }, removeVideoFileId?: string) => {
+    const handleUpdate = (id: string) => async (draft: Partial<Artwork>, imageFiles: File[], videoData?: { url: string; fileId: string }, removeVideoFileId?: string) => {
         const fd = new FormData()
         if (draft.title !== undefined) fd.append("title", draft.title)
         if (draft.category !== undefined) fd.append("category", draft.category)
@@ -634,15 +668,16 @@ export default function DashboardPage() {
         if (draft.tags !== undefined) fd.append("tags", JSON.stringify(draft.tags))
         if (draft.process_steps !== undefined) fd.append("process_steps", JSON.stringify(draft.process_steps))
         if (draft.media_type !== undefined) fd.append("media_type", draft.media_type)
-        
-        if (imageFile) fd.append("image", imageFile)
+        if (draft.image_urls !== undefined) fd.append("image_urls", JSON.stringify(draft.image_urls))
+        if (draft.image_file_ids !== undefined) fd.append("image_file_ids", JSON.stringify(draft.image_file_ids))
+
+        imageFiles.forEach(f => fd.append("images", f))
         
         if (videoData) {
             fd.append("video_url", videoData.url)
             fd.append("video_filekit_id", videoData.fileId)
         }
         
-        // Pass video file ID to delete
         if (removeVideoFileId) {
             fd.append("remove_video_filekit_id", removeVideoFileId)
         }

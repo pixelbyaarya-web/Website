@@ -7,6 +7,8 @@ export interface Artwork {
     process_steps: string[]
     image_url: string | null
     imagekit_file_id: string | null
+    image_urls: string[]
+    image_file_ids: string[]
     video_url: string | null
     video_filekit_id: string | null
     media_type: "image" | "video"

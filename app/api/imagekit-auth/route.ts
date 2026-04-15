@@ -3,12 +3,22 @@ import { NextResponse } from "next/server"
 import { createSupabaseServerClient } from "@/lib/supabase-server"
 
 export async function GET() {
-    // Only allow authenticated users to get an ImageKit token
-    const authClient = await createSupabaseServerClient()
-    const { data: { user } } = await authClient.auth.getUser()
-    if (!user) return NextResponse.json({ error: "Unauthorised" }, { status: 401 })
+    try {
+        // Only allow authenticated users to get an ImageKit token
+        const authClient = await createSupabaseServerClient()
+        const { data: { user }, error: authError } = await authClient.auth.getUser()
+        
+        if (authError || !user) {
+            console.error("[ImageKit] Auth check failed or no user:", authError?.message)
+            return NextResponse.json({ error: "Unauthorised" }, { status: 401 })
+        }
 
-    // Use ImageKit SDK to get signature, token, and expiry
-    const authParams = imagekit.getAuthenticationParameters()
-    return NextResponse.json(authParams)
+        console.log(`[ImageKit] Generating auth params for user: ${user.email}`)
+        // Use ImageKit SDK to get signature, token, and expiry
+        const authParams = imagekit.getAuthenticationParameters()
+        return NextResponse.json(authParams)
+    } catch (err: any) {
+        console.error("[ImageKit] Unexpected error in auth route:", err)
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    }
 }

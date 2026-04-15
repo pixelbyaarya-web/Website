@@ -5,14 +5,8 @@ import { uploadToImageKit, uploadVideoToImageKit } from "@/lib/imagekit"
 // Allow up to 5 minutes for video uploads on Vercel / serverless
 export const maxDuration = 300
 
-// Raise Next.js body-parser limit to 200 MB for video files
-export const config = {
-    api: {
-        bodyParser: {
-            sizeLimit: "200mb",
-        },
-    },
-}
+// Raise Next.js body-parser limit isn't done via export const config in App Router.
+// For large files (videos), we handle it by uploading directly from the client.
 
 export async function GET() {
     const supabase = createSupabaseServiceClient()
@@ -38,12 +32,17 @@ export async function POST(req: NextRequest) {
     const tags = JSON.parse(formData.get("tags") as string || "[]")
     const processSteps = JSON.parse(formData.get("process_steps") as string || "[]")
     const order = parseInt(formData.get("order") as string || "0")
-    const imageFile = formData.get("image") as File | null
-    if (!title || !category)
-        return NextResponse.json({ error: "Title and category required" }, { status: 400 })
+    const imageFiles = formData.getAll("images") as File[]
+    
+    console.log(`[Artworks] POST received: title="${title}", category="${category}", imagesCount=${imageFiles.length}`)
 
-    let image_url: string | null = null
-    let imagekit_file_id: string | null = null
+    if (!title || !category) {
+        console.error(`[Artworks] Validation failed: title or category missing`)
+        return NextResponse.json({ error: "Title and category required" }, { status: 400 })
+    }
+
+    let image_urls: string[] = []
+    let image_file_ids: string[] = []
     let video_url: string | null = null
     let video_filekit_id: string | null = null
     let media_type: "image" | "video" = "image"
@@ -55,13 +54,14 @@ export async function POST(req: NextRequest) {
         media_type = "video"
     }
 
-    // Handle image upload (server-side is fine for images)
-    if (imageFile && imageFile.size > 0) {
-        const buffer = Buffer.from(await imageFile.arrayBuffer())
-        const result = await uploadToImageKit(buffer, imageFile.name)
-        image_url = result.url
-        imagekit_file_id = result.fileId
-        if (media_type !== "video") media_type = "image"
+    // Handle multiple image uploads
+    for (const file of imageFiles) {
+        if (file && file.size > 0) {
+            const buffer = Buffer.from(await file.arrayBuffer())
+            const result = await uploadToImageKit(buffer, file.name)
+            image_urls.push(result.url)
+            image_file_ids.push(result.fileId)
+        }
     }
 
     const supabase = createSupabaseServiceClient()
@@ -69,7 +69,11 @@ export async function POST(req: NextRequest) {
         .from("artworks")
         .insert({
             title, category, description, tags, process_steps: processSteps,
-            image_url, imagekit_file_id, video_url, video_filekit_id, media_type, order
+            image_url: image_urls[0] || null, 
+            imagekit_file_id: image_file_ids[0] || null,
+            image_urls,
+            image_file_ids,
+            video_url, video_filekit_id, media_type, order
         })
         .select()
         .single()
